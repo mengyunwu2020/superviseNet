@@ -1,0 +1,9 @@
+
+export(generate.data)
+export(superviseNet)
+export(superviseNetpath)
+import(MASS)
+importFrom(Matrix,bdiag)
+importFrom(igraph,ba.game)
+importFrom(igraph,get.edgelist)
+importFrom("stats", "dnorm", "pnorm", "rgamma", "rnorm", "runif")
