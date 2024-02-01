@@ -1,5 +1,5 @@
 # superviseNet
-Supervised heterogeneous network estimation via survival-based Bayesian graphical models 
+Supervised heterogeneous network estimation via a survival-based Bayesian graphical model
 
 # Maintainer
 qinxingwork@163.com
