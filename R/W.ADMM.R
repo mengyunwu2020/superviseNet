@@ -4,11 +4,7 @@ soft <-function(a,lam11){
 }
 
 
-Soft <- function(sigma,delta,gamma,x,y,eta,alpha) {
 
-  s=1/length(y)*sum(delta*(sigma*y-gamma)*x)+eta*alpha
-
-}
 
 softfun<-function(a,lam,rho,laplace.m,zz,max.iter=100,eps=1e-2){
   p=dim(a)[1]

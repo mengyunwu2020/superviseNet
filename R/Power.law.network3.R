@@ -1,5 +1,7 @@
 
-Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,Dnum=3,rate,option='ne',N,K0){
+
+
+Power.law.network3 = function(p,s=10,umin1=0.4,umax1=0.7,umin2=0.4,umax2=0.7,umin3=0.4,umax3=0.7,num.differ,Sparse=TRUE,m,Dnum=3,rate){
 
 
 
@@ -16,7 +18,7 @@ Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,
     subi = diag(1,pp,pp)
     for (q in 1:dim(Eg)[1]) {
       i=Eg[q,1];j=Eg[q,2]
-      ij = sample(c(runif(1,umin,umax),runif(1,-umax,-umin)))[1]
+      ij = runif(1,umin1,umax1)
       subi[i,j]=ij;subi[j,i]=ij
     }
 
@@ -29,20 +31,39 @@ Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,
     subi = diag(1,pp,pp)
     for (q in 1:dim(Eg)[1]) {
       i=Eg[q,1];j=Eg[q,2]
-      ij = sample(c(runif(1,umin,umax),runif(1,-umax,-umin)))[1]
+      ij = runif(1,umin2,umax2)
       subi[i,j]=ij;subi[j,i]=ij
     }
-    submatrix2[[ss]] = subi
+
+
+    submatrix2[[ss]] =subi
+
+
+
+
+
 
     g = ba.game(pp, m=m,directed = FALSE)
     Eg = as.data.frame(get.edgelist(g))
     subi = diag(1,pp,pp)
     for (q in 1:dim(Eg)[1]) {
       i=Eg[q,1];j=Eg[q,2]
-      ij = sample(c(runif(1,umin,umax),runif(1,-umax,-umin)))[1]
+      ij = runif(1,umin3,umax3)
       subi[i,j]=ij;subi[j,i]=ij
     }
+
     submatrix3[[ss]] = subi
+
+    tmp_sign=matrix(0,pp,pp)
+    tmp=sample(c(1,-1),pp*(pp-1)/2,replace = T)
+    tmp_sign[upper.tri(tmp_sign)]=tmp
+    tmp_sign=(t(tmp_sign)+tmp_sign)
+
+
+    submatrix[[ss]]=submatrix[[ss]]*tmp_sign
+
+    submatrix2[[ss]]=submatrix2[[ss]]*tmp_sign
+    submatrix3[[ss]]=submatrix3[[ss]]*tmp_sign
   }
   if(num.differ!=(s*rate)){
     if(!Sparse){
@@ -54,7 +75,7 @@ Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,
         subi = diag(1,pp,pp)
         for (q in 1:dim(Eg)[1]) {
           i=Eg[q,1];j=Eg[q,2]
-          ij = sample(c(runif(1,umin,umax),runif(1,-umax,-umin)))[1]
+          ij = sample(c(runif(1,umin1,umax1),runif(1,-umax1,-umin1)))[1]
           subi[i,j]=ij;subi[j,i]=ij
         }
 
@@ -68,13 +89,13 @@ Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,
         subi = subi2 = subi3=diag(1,pp,pp)
         for (q in 1:dim(Eg)[1]) {
           i=Eg[q,1];j=Eg[q,2]
-          ij = sample(c(runif(1,umin,umax),runif(1,-umax,-umin)))[1]
+          ij = sample(c(runif(1,umin1,umax1),runif(1,-umax1,-umin1)))[1]
           subi[i,j]=ij;subi[j,i]=ij
 
-          ij = sample(c(runif(1,umin,umax),runif(1,-umax,-umin)))[1]
-          subi2[i,j]=ij;subi2[j,i]=ij
-          ij = sample(c(runif(1,umin,umax),runif(1,-umax,-umin)))[1]
-          subi3[i,j]=ij;subi3[j,i]=ij
+          ij = (runif(1,umin2,umax2))
+          subi2[i,j]=abs(ij)*sign(subi[j,i]);subi2[j,i]=abs(ij)*sign(subi[j,i])
+          ij = (runif(1,umin3,umax3))
+          subi3[i,j]=abs(ij)*sign(subi[j,i]);subi3[j,i]=abs(ij)*sign(subi[j,i])
         }
 
 
@@ -103,7 +124,7 @@ Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,
     A=bdiag(A,diag(1,(p*(1-rate)),(p*(1-rate))))
   }
   A = as.matrix(A)
-
+  diag(A)=1
   if(ss==1){
     A2=submatrix2[[1]]
   }else{
@@ -114,7 +135,7 @@ Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,
     A2=bdiag(A2,diag(1,(p*(1-rate)),(p*(1-rate))))
   }
   A2 = as.matrix(A2)
-
+  diag(A2)=1
 
   if(ss==1){
     A3=submatrix3[[1]]
@@ -126,41 +147,22 @@ Power.law.network3 = function(p,s=10,umin=0.4,umax=0.7,num.differ,Sparse=TRUE,m,
     A3=bdiag(A3,diag(1,(p*(1-rate)),(p*(1-rate))))
   }
   A3 = as.matrix(A3)
+  diag(A3)=1
 
 
-  if(option=='ne'){
-    ds <- rowSums(abs(A)) * 0.8
-    diag(A) <- ds
-    for (i in 1:p) {
-      for (j in 1:p){
-        A[i, j] <- A[i, j] / sqrt(ds[i]) / sqrt(ds[j])
-      }
-    }
-  }
-  if(option=='ne'){
-    ds <- rowSums(abs(A2)) * 0.8
-    diag(A2) <- ds
-    for (i in 1:p) {
-      for (j in 1:p){
-        A2[i, j] <- A2[i, j] / sqrt(ds[i]) / sqrt(ds[j])
-      }
-    }
-  }
-
-  if(option=='ne'){
-    ds <- rowSums(abs(A3)) * 0.8
-    diag(A3) <- ds
-    for (i in 1:p) {
-      for (j in 1:p){
-        A3[i, j] <- A3[i, j] / sqrt(ds[i]) / sqrt(ds[j])
-      }
-    }
-  }
+    diag(A)=0
+    tmp=0.01+abs(min(eigen(A)$values))
+    A=A+diag(tmp,p,p)
 
 
+    diag(A2)=0
+    tmp=0.01+abs(min(eigen(A2)$values))
+    A2=A2+diag(tmp,p,p)
 
 
-
+    diag(A3)=0
+    tmp=0.01+abs(min(eigen(A3)$values))
+    A3=A3+diag(tmp,p,p)
 
   return(list(A1=A,A2=A2,A3=A3))
 }

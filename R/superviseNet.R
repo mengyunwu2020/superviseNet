@@ -6,17 +6,17 @@
 #' @param v_0 The spike prior parameter.
 #' @param v_1 The slab prior parameter.
 #' @param maxiter Maximum of number of iterations.
-#' @param p_2 The probability parameter of Bernoulli prior on binary latent indicator $gamma_{k,jl}$
-#' @param lambda_b A non-negative tuning parameter of laplace prior on subgroup regression parameters
-#' @param lambda_mu A non-negative tuning parameter of laplace prior on subgroup mean parameters
-#' @param traces Whether to trace intermediate results.
-#' @param eps Tolerance for the EM algorithm. The default value is 1e-3.
+#' @param p_2 The probability parameter of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.
+#' @param lambda_b A non-negative tuning parameter of laplace prior on subgroup regression parameters.
+#' @param lambda_mu A non-negative tuning parameter of laplace prior on subgroup mean parameters.
+#' @param eps Tolerance for the EM algorithm.
 #' @param threshold A small constant that thresholds the final precision matrix estimator.
 #' @param member_input  A vector indicating initialized subgroup memberships of each subjects.
 #' @param eps_z A small regularized constant used in the risk ratio computation.
 #' @param lambda_s A non-negative tuning parameter controlling the similarity across different networks.
-#' @param laplace.m A vector composed of Laplace matrix.
-#'
+#' @param l.m A vector composed of similarity-based matrix.
+#' @param l.update Whether update the similarity matrix.
+#' @param tau1 A small constant used in the computation of similarity matrix.
 #' @return A list
 #' @import MASS
 #' @importFrom igraph ba.game
@@ -26,49 +26,43 @@
 #' @examples
 #' n <- 150
 #' p <- 100
-#' K0 <- 3
-#' repli_result=list()
-#' num.method=10
+#' K <- 3
 #' set.seed(1)
-#' mue <-0
-#' nonnum <- 2
-#' mu03 <- c(rep(mue,nonnum),rep(-mue,nonnum),rep(-0,p-2*nonnum))#rep(0,p)
-#' mu01 <- c(rep(-mue,2*nonnum),rep(-0,p-2*nonnum))
-#' mu02 <- c(rep(mue,2*nonnum),rep(0,p-2*nonnum))
-#' beta=matrix(0,K0,p)
+#' mu01 = mu02 = mu03 = rep(0,p)
+#' beta=matrix(0,K,p)
 #' beta[1,1:5]=2
 #' beta[2,1:5]=-2
 #' beta[3,3:7]=1
 #' beta0=c(0,0,0)
 #' sigma=c(.01,.01,0.01)
+#' rate=.8
 #' Mu0.list <- list(mu01,mu02,mu03)
-#' set.seed(1)
 #' whole.data <- generate.data(n,Mu0.list,beta,beta0,sigma)
 #' whole.data$beta0=beta
 #' xx=whole.data$data
 #' ct=whole.data$ct
-#' set.seed(4)
-#' class_old<-sample(1:K0,nrow(xx),replace=TRUE)
-#' Thetab <- array(0, dim = c(p, p, K0))
-#' Sb <- array(0, dim = c(p, p, K0))
-#' for(k in 1:K0)
+#' set.seed(1)
+#' class_old<-sample(1:K,nrow(xx),replace=TRUE)
+#' Thetab <- array(0, dim = c(p, p, K))
+#' for(k in 1:K)
 #' {
-#' Sb[,,k]  <- cov(xx[class_old == k, , drop = FALSE])
-#' if(det(Sb[,,k])<1e-4) Sb[,,k]=Sb[,,k]+diag(0.01,p,p)
-#' Thetab[,,k] <- solve(Sb[,,k])
+#' Thetab[,,k] <- diag(1,p,p)
 #' }
 #' tau1=0.001
-#' laplace.m=NULL
+#' l.m=NULL
 #' for(i in 1:(p-1)){
 #' for(j in (i+1):p){
 #' tmm=1/sqrt(Thetab[i,j,]^2+tau1^2)
 #' tmp.m=-matrix(tmm,ncol=1)%*%matrix(tmm,nrow=1)
-#' diag(tmp.m)=(K0-1)*(tmm^2)
-#' tmp=tmp.m+diag(tau1,K0,K0)
-#' laplace.m=c(laplace.m,c(tmp))
+#' diag(tmp.m)=(K-1)*(tmm^2)
+#' tmp=tmp.m
+#' dddddd=det(tmp)
+#' if(dddddd<0) print('det is not')
+#' l.m=c(l.m,c(tmp))
 #' }
 #' }
-#' res=superviseNet(ct,xx,K0,lambda_mu=.01,lambda_b=0.06,v_0=0.017,v_1=1,p_2=0.9,lambda_s=0.005,laplace.m=laplace.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3, traces=TRUE, eps_z=1e-5)
+#' res= superviseNet(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v_0=0.057,v_1=1,p_2=0.85,lambda_s=.01,l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=tau1)
+
 
 
 
@@ -82,16 +76,16 @@ superviseNet<-function(
     v_1=1,
     p_2,
     lambda_s,
-    laplace.m,
+    l.m,
     member_input,
-    eps,
+    eps=1e-2,
     maxiter=50,
     threshold=1e-3,
-    traces=TRUE,
-    eps_z=1e-5)
+    eps_z=1e-5,
+    l.update=TRUE,tau1=0.001)
 {
 
-  laplace.m=lambda_s*laplace.m
+  l.m=lambda_s*l.m
 
   if(length(lambda_b)==1){
     lambda_b=matrix(lambda_b,K,p)
@@ -107,7 +101,12 @@ superviseNet<-function(
   censoring <- ct[,2]
 
   memb = member_input
-  n=length(memb)
+
+  if(length(unique(memb))!=K){
+    print('Wrong with the member_input! Random initialization will be used.')
+    print(n)
+    memb=sample(1:K,n,replace = TRUE)
+  }
   Mu = matrix(0,nrow =K, ncol=p)
   prob =rep(0,K)
   for(l in 1:K){
@@ -122,7 +121,6 @@ superviseNet<-function(
   beta=matrix(0,K,p)
   S=list()
   set.seed(1)
-
 
 
   for(k in 1:K){
@@ -275,7 +273,7 @@ superviseNet<-function(
     prob= colMeans(G_mat)
     if(sum(is.na(prob))>0){
       warning('something wrong with probability calculation!')
-      print(G_mat)
+      prob[which(is.na(prob),arr.ind = T)]=1/K
     }
 
     if(sum(prob)!=1) prob=prob/sum(prob)
@@ -297,7 +295,7 @@ superviseNet<-function(
     }
 
 
-    tmp=W.ADMM(S_l, lam.m, nK, laplace.m, epsilon = 1e-5, maxiter = 100, rho = 1,rho.incr = 1.2,rho.max = 1e10,K=K)
+    tmp=W.ADMM(S_l, lam.m, nK, l.m, epsilon = 1e-5, maxiter = 100, rho = 1,rho.incr = 1.2,rho.max = 1e10,K=K)
 
     res1=tmp$W
     for(k in 1:K){
@@ -305,7 +303,7 @@ superviseNet<-function(
       Omega[[k]]=res1[,,k]
     }
     Theta_l=Omega
-    gamma_w=Gamma_int(v_0,v_1, p_2,p,k=K,Theta_l=Omega)
+    gamma_w=Gamma_int(v_0,v_1,p_2,p,k=K,Theta_l=Omega)
 
 
 
@@ -342,6 +340,7 @@ superviseNet<-function(
 
       b[k]=-sum(G_mat[,k]*(1-censoring)*(tmp2)*z_esti[,k])+sum(G_mat[,k]*z_esti[,k]*eta[,k])
       c2[k]= sum(G_mat[,k]*(1-censoring)*(tmp2)*eta[,k])+sum(censoring*G_mat[,k])
+      if(a[k]==0) a[k]=eps_z
       sigma[k]= (b[k])/(2*a[k])+(sqrt(b[k]^2+4*a[k]*c2[k]))/(2*a[k])
     }
 
@@ -350,8 +349,9 @@ superviseNet<-function(
 
     for (k in 1:K) {
       for (j in 1:p) {
-        zeta[j,k]= sum(G_mat[,k]*xx[,j]^2)/n
-        sm=Soft(sigma = sigma[k],G_mat[,k],gamma = eta[,k],xx[,j],y=z_esti[,k],zeta[j,k],beta[k,j])
+        zeta[j,k]= sum(G_mat[,k]*xx[,j]^2)
+        sm=sum(G_mat[,k]*(sigma[k]*z_esti[,k]-eta[,k])*xx[,j])+zeta[j,k]*beta[k,j]
+
 
 
         if (abs(sm)>lambda_b[k,j]){
@@ -389,13 +389,34 @@ superviseNet<-function(
     diff_sigma = sqrt(sum((sigma-sigma.old)^2))/(sqrt(sum(sigma^2))+0.001)
 
 
-    if(traces){
-      cat('the ', tn,'th: diff_beta:',diff_beta,'diff_mu:',diff_mu,'diff_omega:',diff_omega,'diff_sigma',diff_sigma,'diff_z',diff_z,'diff_dia',diff_diagnal,'\n')
-    }
 
     if(max(diff_mu,diff_beta)<eps){
       break;
     }
+
+    if(l.update){
+    Thetab <- array(0, dim = c(p, p, K))
+    for(k in 1:K)
+    {
+      Thetab[,,k] <- Omega[[k]]
+    }
+
+
+    l.m=NULL
+    for(i in 1:(p-1)){
+      for(j in (i+1):p){
+        tmm=1/sqrt(Thetab[i,j,]^2+tau1^2)
+        tmp.m=-matrix(tmm,ncol=1)%*%matrix(tmm,nrow=1)
+        diag(tmp.m)=(K-1)*(tmm^2)
+
+        if(det(tmp.m)<0){ tmp.m=tmp.m+diag(.001,K,K)}
+        l.m=c(l.m,c(tmp.m))
+      }
+    }
+
+    l.m=lambda_s*l.m
+    }
+
   }
 
   for (k in 1:K) {
@@ -409,13 +430,12 @@ superviseNet<-function(
   for(k in 1:K){
     residual2[k,]=(z_esti[,k]-xx%*%beta[k,]-beta0[k])^2
   }
-  # mu=mu*(abs(mu)>threshold)
 
   tmp=array(NA,dim=c(p,p,K))
   for(kk in 1:K){
     tmp[,,kk]=Omega[[kk]]*(abs(Omega[[kk]])>threshold)
+    diag(tmp[,,kk])=diag(Omega[[kk]])
   }
-  # beta=(beta)*(abs(beta)>threshold)
 
   member = apply(G_mat,1,which.max)
   if(class(member)=='list'){
@@ -426,17 +446,5 @@ superviseNet<-function(
 
 
 
-
-}
-
-Gamma_int<-function(v_0, v_1, p_2, p, k,Theta_l){
-
-  P_l=list();
-  for(i in 1:k) {
-    P_l[[i]] = (1.0/(1.0 + v_1/v_0*exp(-abs((Theta_l[[i]]))/v_0 + abs((Theta_l[[i]]))/v_1)*(1-p_2)/p_2));
-  }
-
-
-  return(P_l)
 
 }
