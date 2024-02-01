@@ -14,13 +14,14 @@ superviseNet(
   v_1 = 1,
   p_2,
   lambda_s,
-  laplace.m,
+  l.m,
   member_input,
-  eps,
+  eps = 0.01,
   maxiter = 50,
   threshold = 0.001,
-  traces = TRUE,
-  eps_z = 1e-05
+  eps_z = 1e-05,
+  l.update = TRUE,
+  tau1 = 0.001
 )
 }
 \arguments{
@@ -30,31 +31,33 @@ superviseNet(
 
 \item{K}{Number of subgroups.}
 
-\item{lambda_mu}{A non-negative tuning parameter of laplace prior on subgroup mean parameters}
+\item{lambda_mu}{A non-negative tuning parameter of laplace prior on subgroup mean parameters.}
 
-\item{lambda_b}{A non-negative tuning parameter of laplace prior on subgroup regression parameters}
+\item{lambda_b}{A non-negative tuning parameter of laplace prior on subgroup regression parameters.}
 
 \item{v_0}{The spike prior parameter.}
 
 \item{v_1}{The slab prior parameter.}
 
-\item{p_2}{The probability parameter of Bernoulli prior on binary latent indicator $gamma_{k,jl}$}
+\item{p_2}{The probability parameter of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.}
 
 \item{lambda_s}{A non-negative tuning parameter controlling the similarity across different networks.}
 
-\item{laplace.m}{A vector composed of Laplace matrix.}
+\item{l.m}{A vector composed of similarity-based matrix.}
 
 \item{member_input}{A vector indicating initialized subgroup memberships of each subjects.}
 
-\item{eps}{Tolerance for the EM algorithm. The default value is 1e-3.}
+\item{eps}{Tolerance for the EM algorithm.}
 
 \item{maxiter}{Maximum of number of iterations.}
 
 \item{threshold}{A small constant that thresholds the final precision matrix estimator.}
 
-\item{traces}{Whether to trace intermediate results.}
-
 \item{eps_z}{A small regularized constant used in the risk ratio computation.}
+
+\item{l.update}{Whether update the similarity matrix.}
+
+\item{tau1}{A small constant used in the computation of similarity matrix.}
 }
 \value{
 A list
@@ -65,47 +68,40 @@ Supervised heterogeneous network estimation via survival-based Bayesian graphica
 \examples{
 n <- 150
 p <- 100
-K0 <- 3
-repli_result=list()
-num.method=10
+K <- 3
 set.seed(1)
-mue <-0
-nonnum <- 2
-mu03 <- c(rep(mue,nonnum),rep(-mue,nonnum),rep(-0,p-2*nonnum))#rep(0,p)
-mu01 <- c(rep(-mue,2*nonnum),rep(-0,p-2*nonnum))
-mu02 <- c(rep(mue,2*nonnum),rep(0,p-2*nonnum))
-beta=matrix(0,K0,p)
+mu01 = mu02 = mu03 = rep(0,p)
+beta=matrix(0,K,p)
 beta[1,1:5]=2
 beta[2,1:5]=-2
 beta[3,3:7]=1
 beta0=c(0,0,0)
 sigma=c(.01,.01,0.01)
+rate=.8
 Mu0.list <- list(mu01,mu02,mu03)
-set.seed(1)
 whole.data <- generate.data(n,Mu0.list,beta,beta0,sigma)
 whole.data$beta0=beta
 xx=whole.data$data
 ct=whole.data$ct
-set.seed(4)
-class_old<-sample(1:K0,nrow(xx),replace=TRUE)
-Thetab <- array(0, dim = c(p, p, K0))
-Sb <- array(0, dim = c(p, p, K0))
-for(k in 1:K0)
+set.seed(1)
+class_old<-sample(1:K,nrow(xx),replace=TRUE)
+Thetab <- array(0, dim = c(p, p, K))
+for(k in 1:K)
 {
-Sb[,,k]  <- cov(xx[class_old == k, , drop = FALSE])
-if(det(Sb[,,k])<1e-4) Sb[,,k]=Sb[,,k]+diag(0.01,p,p)
-Thetab[,,k] <- solve(Sb[,,k])
+Thetab[,,k] <- diag(1,p,p)
 }
 tau1=0.001
-laplace.m=NULL
+l.m=NULL
 for(i in 1:(p-1)){
 for(j in (i+1):p){
 tmm=1/sqrt(Thetab[i,j,]^2+tau1^2)
 tmp.m=-matrix(tmm,ncol=1)\%*\%matrix(tmm,nrow=1)
-diag(tmp.m)=(K0-1)*(tmm^2)
-tmp=tmp.m+diag(tau1,K0,K0)
-laplace.m=c(laplace.m,c(tmp))
+diag(tmp.m)=(K-1)*(tmm^2)
+tmp=tmp.m
+dddddd=det(tmp)
+if(dddddd<0) print('det is not')
+l.m=c(l.m,c(tmp))
 }
 }
-res=superviseNet(ct,xx,K0,lambda_mu=.01,lambda_b=0.06,v_0=0.017,v_1=1,p_2=0.9,lambda_s=0.005,laplace.m=laplace.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3, traces=TRUE, eps_z=1e-5)
+res= superviseNet(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v_0=0.057,v_1=1,p_2=0.85,lambda_s=.01,l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=tau1)
 }
