@@ -56,8 +56,6 @@
 #' tmp.m=-matrix(tmm,ncol=1)%*%matrix(tmm,nrow=1)
 #' diag(tmp.m)=(K-1)*(tmm^2)
 #' tmp=tmp.m
-#' dddddd=det(tmp)
-#' if(dddddd<0) print('det is not')
 #' l.m=c(l.m,c(tmp))
 #' }
 #' }
@@ -106,7 +104,6 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
           lambda_b=lambda_beta[mm]
           lambda_s=lambda_sim[ss]
           p_2=p2[qq]
-          print(c(v_1,v_0,lambda_b,lambda_s,p_2))
           lam[ltl,]=c(v_1,v_0,lambda_b,lambda_s,p_2)
 
           cat('the ',ltl,'th lams is running','\n')
