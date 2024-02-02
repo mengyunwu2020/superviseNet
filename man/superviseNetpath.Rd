@@ -98,8 +98,6 @@ tmm=1/sqrt(Thetab[i,j,]^2+tau1^2)
 tmp.m=-matrix(tmm,ncol=1)\%*\%matrix(tmm,nrow=1)
 diag(tmp.m)=(K-1)*(tmm^2)
 tmp=tmp.m
-dddddd=det(tmp)
-if(dddddd<0) print('det is not')
 l.m=c(l.m,c(tmp))
 }
 }
