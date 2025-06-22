@@ -1,8 +1,8 @@
 # superviseNet
-Supervised heterogeneous network estimation via a survival-based Bayesian graphical model
+Supervised Bayesian Joint Graphical Model for Simultaneous Network Estimation and Subgroup Identification
 
 # Maintainer
-qinxingwork@163.com
+qinxing@suibe.edu.cn
  
 # Usage
 
