@@ -2,7 +2,7 @@
 % Please edit documentation in R/superviseNetpath.R
 \name{superviseNetpath}
 \alias{superviseNetpath}
-\title{Supervised heterogeneous network estimation via survival-based Bayesian graphical models (superviseNet) along path.}
+\title{Supervised Bayesian joint graphical model for simultaneous network estimation and subgroup identification (superviseNet) along path.}
 \usage{
 superviseNetpath(
   ct,
@@ -44,7 +44,7 @@ superviseNetpath(
 
 \item{tau_0}{A user supplied non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.}
 
-\item{p2}{A user supplied probability parameters of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.}
+\item{p2}{A user supplied probability parameters of Bernoulli prior on binary latent indicators \eqn{\gamma_{k,jl}}'s.}
 
 \item{l.m}{A vector composed of similarity-based matrix.}
 
@@ -66,7 +66,7 @@ superviseNetpath(
 A list
 }
 \description{
-Supervised heterogeneous network estimation via survival-based Bayesian graphical models (superviseNet) along path.
+Supervised Bayesian joint graphical model for simultaneous network estimation and subgroup identification (superviseNet) along path.
 }
 \examples{
 n <- 150              # The sample size of each subgroup
