@@ -10,6 +10,7 @@ superviseNet(
   K,
   lambda_mu,
   lambda_b,
+  tau_0 = 0.01,
   v_0,
   v_1 = 1,
   p_2,
@@ -35,11 +36,13 @@ superviseNet(
 
 \item{lambda_b}{A non-negative tuning parameter of laplace prior on subgroup regression parameters.}
 
+\item{tau_0}{A non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.}
+
 \item{v_0}{The spike prior parameter.}
 
 \item{v_1}{The slab prior parameter.}
 
-\item{p_2}{The probability parameter of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.}
+\item{p_2}{The probability parameter of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.}
 
 \item{lambda_s}{A non-negative tuning parameter controlling the similarity across different networks.}
 
@@ -101,5 +104,5 @@ tmp=tmp.m
 l.m=c(l.m,c(tmp))
 }
 }
-res= superviseNet(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v_0=0.057,v_1=1,p_2=0.85,lambda_s=.01,l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=tau1)
+res= superviseNet(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v_0=0.057,v_1=1,p_2=0.85,lambda_s=.01,l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=tau1,tau_0=0.01)
 }
