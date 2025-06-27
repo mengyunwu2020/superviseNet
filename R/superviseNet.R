@@ -6,7 +6,7 @@
 #' @param v_0 The spike prior parameter.
 #' @param v_1 The slab prior parameter.
 #' @param maxiter Maximum of number of iterations.
-#' @param p_2 The probability parameter of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.
+#' @param p_2 The probability parameter of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.
 #' @param lambda_b A non-negative tuning parameter of laplace prior on subgroup regression parameters.
 #' @param lambda_mu A non-negative tuning parameter of laplace prior on subgroup mean parameters.
 #' @param tau_0 A non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.
