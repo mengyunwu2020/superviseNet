@@ -9,6 +9,7 @@
 #' @param p_2 The probability parameter of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.
 #' @param lambda_b A non-negative tuning parameter of laplace prior on subgroup regression parameters.
 #' @param lambda_mu A non-negative tuning parameter of laplace prior on subgroup mean parameters.
+#' @param tau_0 A non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.
 #' @param eps Tolerance for the EM algorithm.
 #' @param threshold A small constant that thresholds the final precision matrix estimator.
 #' @param member_input  A vector indicating initialized subgroup memberships of each subjects.
@@ -59,7 +60,7 @@
 #' l.m=c(l.m,c(tmp))
 #' }
 #' }
-#' res= superviseNet(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v_0=0.057,v_1=1,p_2=0.85,lambda_s=.01,l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=tau1)
+#' res= superviseNet(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v_0=0.057,v_1=1,p_2=0.85,lambda_s=.01,l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=tau1,tau_0=0.01)
 
 
 
@@ -70,6 +71,7 @@ superviseNet<-function(
     K,
     lambda_mu,
     lambda_b,
+    tau_0=0.01,
     v_0,
     v_1=1,
     p_2,
@@ -293,7 +295,7 @@ superviseNet<-function(
     }
 
 
-    tmp=W.ADMM(S_l, lam.m, nK, l.m, epsilon = 1e-5, maxiter = 100, rho = 1,rho.incr = 1.2,rho.max = 1e10,K=K)
+    tmp=W.ADMM(S_l, lam.m, nK, l.m, epsilon = 1e-5, maxiter = 100, rho = 1,rho.incr = 1.2,rho.max = 1e10,K=K,tau_0=tau_0)
 
     res1=tmp$W
     for(k in 1:K){
