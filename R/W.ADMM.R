@@ -47,7 +47,7 @@ softfun<-function(a,lam,rho,laplace.m,zz,max.iter=100,eps=1e-2,tau_0){
   }
 
   for(k in 1:K){
-    diag(out[,,k]) <-diag(a[,,k])+tau_0/rho
+    diag(out[,,k]) <-diag(a[,,k])-tau_0/rho
   }
 
   return(out)
