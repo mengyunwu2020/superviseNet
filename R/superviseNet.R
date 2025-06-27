@@ -1,4 +1,4 @@
-#' Supervised heterogeneous network estimation via survival-based Bayesian graphical models  (superviseNet).
+#' Supervised Bayesian joint graphical model for simultaneous network estimation and subgroup identification (superviseNet).
 #'
 #' @param ct  A two-column matrix with the first column being the survival time and the second column being the censoring indicator. The indicator is a binary variable, with "1" indicating dead, and "0" indicating right censored.
 #' @param xx Input matrix of p genetic measurements consisting of n rows. Each row is an observation vector.
@@ -6,7 +6,7 @@
 #' @param v_0 The spike prior parameter.
 #' @param v_1 The slab prior parameter.
 #' @param maxiter Maximum of number of iterations.
-#' @param p_2 The probability parameter of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.
+#' @param p_2 The probability parameter of Bernoulli prior on binary latent indicators \eqn{\gamma_{k,jl}}'s.
 #' @param lambda_b A non-negative tuning parameter of laplace prior on subgroup regression parameters.
 #' @param lambda_mu A non-negative tuning parameter of laplace prior on subgroup mean parameters.
 #' @param tau_0 A non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.
@@ -448,4 +448,3 @@ superviseNet<-function(
 
 
 }
- 
