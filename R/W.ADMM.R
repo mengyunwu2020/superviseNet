@@ -6,7 +6,7 @@ soft <-function(a,lam11){
 
 
 
-softfun<-function(a,lam,rho,laplace.m,zz,max.iter=100,eps=1e-2){
+softfun<-function(a,lam,rho,laplace.m,zz,max.iter=100,eps=1e-2,tau_0){
   p=dim(a)[1]
   K=dim(a)[3]
 
@@ -47,7 +47,7 @@ softfun<-function(a,lam,rho,laplace.m,zz,max.iter=100,eps=1e-2){
   }
 
   for(k in 1:K){
-    diag(out[,,k]) <-diag(a[,,k])
+    diag(out[,,k]) <-diag(a[,,k])+tau_0/rho
   }
 
   return(out)
@@ -70,7 +70,7 @@ expand = function(A, rho, n){
 
 W.ADMM<-function(S, lam,  num, laplace.m,
                  epsilon = 1e-5, maxiter = 500, rho = 0.1,
-                 rho.incr = 1.2,rho.max = 1e10,K){
+                 rho.incr = 1.2,rho.max = 1e10,K,tau_0){
 
 
   p = dim(S[[1]])[1]
@@ -97,7 +97,7 @@ W.ADMM<-function(S, lam,  num, laplace.m,
       temp[,,k] = 1/rho*A[,,k]+W[,,k]
     }
 
-    Z = softfun(temp,lam,rho,laplace.m,Z_prev,max.iter=100,eps=1e-2)
+    Z = softfun(temp,lam,rho,laplace.m,Z_prev,max.iter=100,eps=1e-2,tau_0)
 
 
 
