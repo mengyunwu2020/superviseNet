@@ -8,6 +8,7 @@
 #' @param v0 A user supplied spike prior parameters.
 #' @param lambda_beta A user supplied non-negative tuning parameters of laplace prior on subgroup regression parameters.
 #' @param lambda_sim A user supplied non-negative tuning parameters controlling the similarity across different networks.
+#' @param tau_0 A user supplied non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.
 #' @param p2 A user supplied probability parameters of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.
 #' @param l.m A vector composed of similarity-based matrix.
 #' @param member_input A vector indicating initialized subgroup memberships of each subjects.
@@ -59,8 +60,8 @@
 #' l.m=c(l.m,c(tmp))
 #' }
 #' }
-#' res=superviseNetpath(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v0=seq(0.057,.06,length.out=2),v1=1,p2=0.85,lambda_sim=c(0.1,0.05,0.01),l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5)
-superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_sim,p2,l.m,member_input,eps =1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=0.001){
+#' res=superviseNetpath(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_beta=sqrt(dim(ct)[1]*log(p))/2,tau_0=0.01,v0=seq(0.057,.06,length.out=2),v1=1,p2=0.85,lambda_sim=c(0.1,0.05,0.01),l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5)
+superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_sim,tau_0=0.01,p2,l.m,member_input,eps =1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=0.001){
 
 
   L1 = length(v1)
@@ -68,8 +69,9 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
   L3 = length(lambda_beta)
   L4 = length(lambda_sim)
   L5 = length(p2)
+  L6 = length(tau_0)
   p=ncol(xx)
-  LL = L1*L2*L3*L4*L5
+  LL = L1*L2*L3*L4*L5*L6
 
   bic=rep(1e100,length(Kseq))
   lt=0
@@ -88,7 +90,7 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
     member.list = list()
     beta.list=sigma.list=list()
     aBIC=aicp=ADBIC=rep(10^10, LL)
-    lam=matrix(0,LL,5)
+    lam=matrix(0,LL,6)
     ltl=0
 
     for(jj in 1:L1){
@@ -96,7 +98,7 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
         for(mm in 1:L3){
           for(ss in 1:L4){
             for(qq in 1:L5){
-
+              for(yy in 1:L6){
           ltl=ltl+1
 
           v_1=v1[jj]
@@ -104,7 +106,8 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
           lambda_b=lambda_beta[mm]
           lambda_s=lambda_sim[ss]
           p_2=p2[qq]
-          lam[ltl,]=c(v_1,v_0,lambda_b,lambda_s,p_2)
+          tau0=tau_0[yy]
+          lam[ltl,]=c(v_1,v_0,lambda_b,lambda_s,p_2,tau0)
 
           cat('the ',ltl,'th lams is running','\n')
           print(lam[ltl,])
@@ -114,7 +117,7 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
                                 v_1=v_1,
                                 maxiter=maxiter,
                                 p_2=p_2,
-                                lambda_b=lambda_b,lambda_mu=lambda_mu,
+                                lambda_b=lambda_b,lambda_mu=lambda_mu,tau_0=tau0,
                                 threshold=threshold,eps=eps,member_input=member_input,eps_z=eps_z,lambda_s = lambda_s,l.m =l.m,l.update=l.update
           )
 
@@ -145,7 +148,7 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
 
           aicp[ltl]=tmp$aic
 
-
+}
           }
           }
         }
@@ -161,6 +164,9 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
     }
 
     Opt_aAIC = aicp[indtmp]
+    
+    colnames(lam)=c('v_1','v_0','lambda_b','lambda_s','p_2','tau0')
+    
     Opt_lambda_aic = lam[indtmp,]
 
 
