@@ -1,4 +1,4 @@
-#' Supervised heterogeneous network estimation via survival-based Bayesian graphical models (superviseNet) along path.
+#' Supervised Bayesian joint graphical model for simultaneous network estimation and subgroup identification (superviseNet) along path.
 #'
 #' @param ct  A two-column matrix with the first column being the survival time and the second column being the censoring indicator. The indicator is a binary variable, with "1" indicating dead, and "0" indicating right censored.
 #' @param xx Input matrix of p genetic measurements consisting of n rows. Each row is an observation vector.
@@ -9,7 +9,7 @@
 #' @param lambda_beta A user supplied non-negative tuning parameters of laplace prior on subgroup regression parameters.
 #' @param lambda_sim A user supplied non-negative tuning parameters controlling the similarity across different networks.
 #' @param tau_0 A user supplied non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.
-#' @param p2 A user supplied probability parameters of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.
+#' @param p2 A user supplied probability parameters of Bernoulli prior on binary latent indicators \eqn{\gamma_{k,jl}}'s.
 #' @param l.m A vector composed of similarity-based matrix.
 #' @param member_input A vector indicating initialized subgroup memberships of each subjects.
 #' @param eps Tolerance for the EM algorithm.
