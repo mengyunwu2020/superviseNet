@@ -2,7 +2,7 @@
 % Please edit documentation in R/superviseNet.R
 \name{superviseNet}
 \alias{superviseNet}
-\title{Supervised heterogeneous network estimation via survival-based Bayesian graphical models  (superviseNet).}
+\title{Supervised Bayesian joint graphical model for simultaneous network estimation and subgroup identification (superviseNet).}
 \usage{
 superviseNet(
   ct,
@@ -42,7 +42,7 @@ superviseNet(
 
 \item{v_1}{The slab prior parameter.}
 
-\item{p_2}{The probability parameter of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.}
+\item{p_2}{The probability parameter of Bernoulli prior on binary latent indicators \eqn{\gamma_{k,jl}}'s.}
 
 \item{lambda_s}{A non-negative tuning parameter controlling the similarity across different networks.}
 
@@ -66,7 +66,7 @@ superviseNet(
 A list
 }
 \description{
-Supervised heterogeneous network estimation via survival-based Bayesian graphical models  (superviseNet).
+Supervised Bayesian joint graphical model for simultaneous network estimation and subgroup identification (superviseNet).
 }
 \examples{
 n <- 150
