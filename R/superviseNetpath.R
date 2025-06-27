@@ -9,7 +9,7 @@
 #' @param lambda_beta A user supplied non-negative tuning parameters of laplace prior on subgroup regression parameters.
 #' @param lambda_sim A user supplied non-negative tuning parameters controlling the similarity across different networks.
 #' @param tau_0 A user supplied non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.
-#' @param p2 A user supplied probability parameters of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.
+#' @param p2 A user supplied probability parameters of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.
 #' @param l.m A vector composed of similarity-based matrix.
 #' @param member_input A vector indicating initialized subgroup memberships of each subjects.
 #' @param eps Tolerance for the EM algorithm.
@@ -164,9 +164,9 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
     }
 
     Opt_aAIC = aicp[indtmp]
-    
+
     colnames(lam)=c('v_1','v_0','lambda_b','lambda_s','p_2','tau0')
-    
+
     Opt_lambda_aic = lam[indtmp,]
 
 
