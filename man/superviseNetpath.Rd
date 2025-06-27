@@ -13,6 +13,7 @@ superviseNetpath(
   v0,
   lambda_beta,
   lambda_sim,
+  tau_0 = 0.01,
   p2,
   l.m,
   member_input,
@@ -41,7 +42,9 @@ superviseNetpath(
 
 \item{lambda_sim}{A user supplied non-negative tuning parameters controlling the similarity across different networks.}
 
-\item{p2}{A user supplied probability parameters of Bernoulli prior on binary latent indicator $gamma_{k,jl}$.}
+\item{tau_0}{A user supplied non-negative tuning parameter of exponential prior on diagonal elements of precision matrices.}
+
+\item{p2}{A user supplied probability parameters of Bernoulli prior on binary latent indicator $\gamma_{k,jl}$.}
 
 \item{l.m}{A vector composed of similarity-based matrix.}
 
@@ -101,5 +104,5 @@ tmp=tmp.m
 l.m=c(l.m,c(tmp))
 }
 }
-res=superviseNetpath(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_b=sqrt(dim(ct)[1]*log(p))/2,v0=seq(0.057,.06,length.out=2),v1=1,p2=0.85,lambda_sim=c(0.1,0.05,0.01),l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5)
+res=superviseNetpath(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_beta=sqrt(dim(ct)[1]*log(p))/2,tau_0=0.01,v0=seq(0.057,.06,length.out=2),v1=1,p2=0.85,lambda_sim=c(0.1,0.05,0.01),l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5)
 }
