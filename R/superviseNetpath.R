@@ -73,10 +73,8 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
   p=ncol(xx)
   LL = L1*L2*L3*L4*L5*L6
 
-  bic=rep(1e100,length(Kseq))
   lt=0
   resultall=vector('list',length(Kseq))
-  oobic=oobic2=oobic3=rep(10e10,length(Kseq))
 
 
   for(K in Kseq){
@@ -89,7 +87,7 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
     L.mat.list = list()
     member.list = list()
     beta.list=sigma.list=list()
-    aBIC=aicp=ADBIC=rep(10^10, LL)
+    bicp=rep(10^10, LL)
     lam=matrix(0,LL,6)
     ltl=0
 
@@ -99,80 +97,80 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
           for(ss in 1:L4){
             for(qq in 1:L5){
               for(yy in 1:L6){
-          ltl=ltl+1
+                ltl=ltl+1
 
-          v_1=v1[jj]
-          v_0=v0[ll]
-          lambda_b=lambda_beta[mm]
-          lambda_s=lambda_sim[ss]
-          p_2=p2[qq]
-          tau0=tau_0[yy]
-          lam[ltl,]=c(v_1,v_0,lambda_b,lambda_s,p_2,tau0)
+                v_1=v1[jj]
+                v_0=v0[ll]
+                lambda_b=lambda_beta[mm]
+                lambda_s=lambda_sim[ss]
+                p_2=p2[qq]
+                tau0=tau_0[yy]
+                lam[ltl,]=c(v_1,v_0,lambda_b,lambda_s,p_2,tau0)
 
-          cat('the ',ltl,'th lams is running','\n')
-          print(lam[ltl,])
+                cat('the ',ltl,'th lams is running','\n')
+                print(lam[ltl,])
 
-          PP=superviseNet(ct,xx, K=K,
+                PP=superviseNet(ct,xx, K=K,
                                 v_0=v_0,
                                 v_1=v_1,
                                 maxiter=maxiter,
                                 p_2=p_2,
                                 lambda_b=lambda_b,lambda_mu=lambda_mu,tau_0=tau0,
                                 threshold=threshold,eps=eps,member_input=member_input,eps_z=eps_z,lambda_s = lambda_s,l.m =l.m,l.update=l.update
-          )
+                )
 
-            mu_hat=PP$mu
-            mmem=PP$member
-            Theta_hat=PP$Omega
+                mu_hat=PP$mu
+                mmem=PP$member
+                Theta_hat=PP$Omega
 
-            L.mat=matrix(0,dim(xx)[1],K)
-            for(il in 1:dim(xx)[1]){
-              L.mat[il, mmem[il]]=1
+                L.mat=matrix(0,dim(xx)[1],K)
+                for(il in 1:dim(xx)[1]){
+                  L.mat[il, mmem[il]]=1
+                }
+
+                prob = PP$prob;
+                residual2=PP$residual2
+                beta_hat=PP$beta
+                beta0=PP$beta0
+                sigma_hat=(PP$sigma)^2
+
+                prob.list[[ltl]]=prob;
+                Mu_hat.list[[ltl]]=mu_hat;
+                Theta_hat.list[[ltl]]=Theta_hat;
+                L.mat.list[[ltl]] = L.mat
+                beta.list[[ltl]]=c(beta0,beta_hat)
+                sigma.list[[ltl]]=sigma_hat
+
+
+                tmp=AdapBIC(ct, xx, residual2, mu_hat, Theta_hat, beta0,beta_hat, sigma_hat, L.mat=L.mat,pi_vec=prob)
+
+                bicp[ltl]=tmp$bic
+
+              }
             }
-
-            prob = PP$prob;
-            residual2=PP$residual2
-            beta_hat=PP$beta
-            beta0=PP$beta0
-            sigma_hat=(PP$sigma)^2
-
-          prob.list[[ltl]]=prob;
-          Mu_hat.list[[ltl]]=mu_hat;
-          Theta_hat.list[[ltl]]=Theta_hat;
-          L.mat.list[[ltl]] = L.mat
-          beta.list[[ltl]]=c(beta0,beta_hat)
-          sigma.list[[ltl]]=sigma_hat
-
-
-          tmp=AdapBIC(ct, xx, residual2, mu_hat, Theta_hat, beta0,beta_hat, sigma_hat, L.mat=L.mat,pi_vec=prob)
-
-          aicp[ltl]=tmp$aic
-
-}
-          }
           }
         }
 
       }
     }
 
-    indtmp=which.min(aicp)
+    indtmp=which.min(bicp)
 
 
     if(length(indtmp)!=1){
       indtmp=ifelse(length(indtmp)==0,1,indtmp[1])
     }
 
-    Opt_aAIC = aicp[indtmp]
+    Opt_abic = bicp[indtmp]
 
     colnames(lam)=c('v_1','v_0','lambda_b','lambda_s','p_2','tau0')
 
-    Opt_lambda_aic = lam[indtmp,]
+    Opt_lambda_bic = lam[indtmp,]
 
 
 
-    result_adap.bic = list(K=K, Opt_lambda_aic =Opt_lambda_aic,Mu_hat.list=Mu_hat.list,Theta_hat.list=Theta_hat.list,
-                           L.mat.list=L.mat.list, Opt_aAIC=Opt_aAIC, Opt_num_aic=indtmp, aicp=aicp,
+    result_adap.bic = list(K=K, Opt_lambda_bic =Opt_lambda_bic,Mu_hat.list=Mu_hat.list,Theta_hat.list=Theta_hat.list,
+                           L.mat.list=L.mat.list, Opt_abic=Opt_abic, Opt_num_bic=indtmp, bicp=bicp,
                            prob.list=prob.list,
                            beta.list= beta.list, sigma.list=sigma.list,
                            gamma=gamma,lam= lam,l.m=l.m,member_input=member_input)
