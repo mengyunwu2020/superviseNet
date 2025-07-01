@@ -37,18 +37,18 @@ AdapBIC = function(ct, data, residual2, mu_hat, Theta_hat,beta0, beta_hat, sigma
   }
   p=dim(data)[2]
   
-  dfomega =  2 * length(which(Theta_hat != 0))
+  dfomega =  length(which(Theta_hat != 0))
   dfmu = length(which(mu_hat!=0))
   dfbeta = length(which(beta_hat!=0))
   
   
-  aic = fit.error +  dfomega + log(n) * (dfmu+dfbeta)  
+  bic = fit.error + log(n) * (dfomega+dfmu+dfbeta)  
   
   
   P = list()
   P$fit.error = fit.error
  
-  P$aic=aic
+  P$bic=bic
   P$f.mat=f.mat 
   return(P)
 }
