@@ -1,15 +1,17 @@
 Package: superviseNet
 Type: Package
-Title: Supervised heterogeneous network estimation via survival-based
-        Bayesian graphical models
+Title: Supervised Bayesian Joint Graphical Model for Simultaneous
+        Network Estimation and Subgroup Identification
 Version: 0.1.0
-Author: Xing Qin
-Maintainer: Xing Qin <qinxingwork@163.com>
-Description: This package is created for the practical application of our work 'Supervised heterogeneous network estimation via survival-based Bayesian graphical models'
+Author: Anonymous
+Maintainer: Anonymous <anonymous@example.com>
+Description: Implements the supervised heterogeneous network estimation methods via survival-based Bayesian graphical models, as described in the accompanying manuscript.
 License: GPL-2
 Encoding: UTF-8
 Imports: igraph, MASS, Matrix
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
-Depends: R (>= 3.6.1) 
+Depends: R (>= 3.6.1)
+NeedsCompilation: no
+Packaged: 2026-02-04 08:16:10 UTC; qinxing
