@@ -1,14 +1,14 @@
 #' @importFrom Matrix bdiag
 #' @export
 
-generate.data = function(n,Mu0.list,beta,beta0,sigma){
-  set.seed(3)
-  num.differ=3
+generate.data = function(n,Mu0.list,beta,beta0,sigma,rate=.8,num.differ=7){
+
   K0 = length(Mu0.list)
   N <- rep(n,K0)
   p = length(Mu0.list[[1]])
+  if(K0==3){
   A.list <-Power.law.network3(p,s=10,umin1=0.8,umax1=1,umin2=1.8,umax2=2,umin3=2.8,umax3=3,num.differ=num.differ,Sparse=TRUE,m=1,Dnum=3,rate=1)
-  rate=.8
+
   Theta01 <- A.list$A1
   Theta02 <- A.list$A2
   Theta03 <- A.list$A3
@@ -17,8 +17,18 @@ generate.data = function(n,Mu0.list,beta,beta0,sigma){
   sigma03 <- solve(Theta03)
   Sigma0.list <- list(sigma01,sigma02,sigma03)
   Theta0.list <- list(Theta01,Theta02,Theta03)
+  }else if(K0==2){
+    A.list <-Power.law.network1(p,s=10,umin1=0.5,umax1=1,umin2=.5,umax2=1,num.differ=num.differ,Sparse=TRUE,m=1,Dnum=3,rate=1)
 
-  set.seed(3)
+    Theta01 <- A.list$A1
+    Theta02 <- A.list$A2
+    sigma01 <- solve(Theta01)
+    sigma02 <- solve(Theta02)
+    Sigma0.list <- list(sigma01,sigma02)
+    Theta0.list <- list(Theta01,Theta02)
+
+}
+  # set.seed(3)
   Mu0=matrix(0,K0,p);L0=NULL;Theta0=array(0, dim = c(p, p, K0));data=NULL
   Y=NULL
   for (k in 1:K0) {
@@ -48,7 +58,8 @@ generate.data = function(n,Mu0.list,beta,beta0,sigma){
   niter=1
   rrrr=NULL
   time <- ti
-  if(rate==0.8){
+
+
     delta_all=time_all=NULL
     ntmp=1
     for(kk in 1:K0){
@@ -56,7 +67,6 @@ generate.data = function(n,Mu0.list,beta,beta0,sigma){
       rrrr=NULL
 
 
-      print(mean(ti[(ntmp):(ntmp+N[kk]-1)]))
       niter=0
       delta=rep(0,N[kk])
       while((abs(sum(delta)/N[kk]-rate)>0.02)&niter<=50){
@@ -104,7 +114,6 @@ generate.data = function(n,Mu0.list,beta,beta0,sigma){
 
     }
 
-  }
   delta=delta_all
   time=time_all
   censoring=delta

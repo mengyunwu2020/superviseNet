@@ -104,7 +104,6 @@ superviseNet<-function(
 
   if(length(unique(memb))!=K){
     print('Wrong with the member_input! Random initialization will be used.')
-    print(n)
     memb=sample(1:K,n,replace = TRUE)
   }
   Mu = matrix(0,nrow =K, ncol=p)
@@ -435,12 +434,23 @@ superviseNet<-function(
   for(kk in 1:K){
     tmp[,,kk]=Omega[[kk]]*(abs(Omega[[kk]])>threshold)
     diag(tmp[,,kk])=diag(Omega[[kk]])
+    Omega[[kk]]=tmp[,,kk]
   }
+
+  gamma_w=Gamma_int(v_0=v_0,v_1=v_1,p_2=p_2,p,k=K,Theta_l=Omega)
+  for(kk in 1:K){
+    diag(gamma_w[[kk]])=1
+  }
+
 
   member = apply(G_mat,1,which.max)
   if(class(member)=='list'){
     member=as.numeric(member)
   }
+
+  mu[abs(mu)<threshold]=0
+
+  beta[abs(beta)<threshold]=0
   return(list(mu=mu, Omega=tmp,prob=prob, G_mat= G_mat,member=member,beta=beta,residual2=residual2,beta0=beta0,sigma=sigma,z=z_esti,gamma=gamma_w))
 
 

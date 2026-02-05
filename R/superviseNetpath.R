@@ -18,6 +18,7 @@
 #' @param eps_z A small regularized constant used in the risk ratio computation.
 #' @param l.update Whether update the similarity matrix.
 #' @param tau1 A small constant used in the computation of similarity matrix.
+#' @param thres_gamma A constant that thresholds the final precision matrix indicator estimator.
 #' @return A list
 #' @import MASS
 #' @importFrom igraph ba.game
@@ -61,7 +62,7 @@
 #' }
 #' }
 #' res=superviseNetpath(ct,xx,K,lambda_mu=sqrt(dim(ct)[1]*log(p))/2,lambda_beta=sqrt(dim(ct)[1]*log(p))/2,tau_0=0.01,v0=seq(0.057,.06,length.out=2),v1=1,p2=0.85,lambda_sim=c(0.1,0.05,0.01),l.m=l.m,member_input=class_old,eps=1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5)
-superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_sim,tau_0=0.01,p2,l.m,member_input,eps =1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=0.001){
+superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_sim,tau_0=0.01,p2,l.m,member_input,eps =1e-2,maxiter=50,threshold=1e-3,eps_z=1e-5,l.update=TRUE,tau1=0.001,thres_gamma=0.5){
 
 
   L1 = length(v1)
@@ -86,7 +87,7 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
     prob.list = list()
     L.mat.list = list()
     member.list = list()
-    beta.list=sigma.list=list()
+    beta.list=sigma.list= gamma.list=residual.list=list()
     bicp=rep(10^10, LL)
     lam=matrix(0,LL,6)
     ltl=0
@@ -138,11 +139,17 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
                 Mu_hat.list[[ltl]]=mu_hat;
                 Theta_hat.list[[ltl]]=Theta_hat;
                 L.mat.list[[ltl]] = L.mat
-                beta.list[[ltl]]=c(beta0,beta_hat)
+                beta.list[[ltl]]=cbind(beta0,beta_hat)
                 sigma.list[[ltl]]=sigma_hat
+                gamma.list[[ltl]]=PP$gamma
 
+                A.hat2=array(NA,dim=c(p,p,K))
+                for(k in 1:K){
+                  A.hat2[,,k]=abs(PP$gamma[[k]])>thres_gamma
+                }
 
-                tmp=AdapBIC(ct, xx, residual2, mu_hat, Theta_hat, beta0,beta_hat, sigma_hat, L.mat=L.mat,pi_vec=prob)
+                residual.list[[ltl]]=residual2
+                tmp=AdapBIC(ct, xx, residual2, mu_hat, (Theta_hat*A.hat2), beta0,beta_hat, sigma_hat, L.mat=L.mat,pi_vec=prob)
 
                 bicp[ltl]=tmp$bic
 
@@ -171,9 +178,9 @@ superviseNetpath= function(ct, xx, Kseq,lambda_mu=0,v1=1,v0,lambda_beta,lambda_s
 
     result_adap.bic = list(K=K, Opt_lambda_bic =Opt_lambda_bic,Mu_hat.list=Mu_hat.list,Theta_hat.list=Theta_hat.list,
                            L.mat.list=L.mat.list, Opt_abic=Opt_abic, Opt_num_bic=indtmp, bicp=bicp,
-                           prob.list=prob.list,
+                           prob.list=prob.list,residual.list=residual.list,
                            beta.list= beta.list, sigma.list=sigma.list,
-                           gamma=gamma,lam= lam,l.m=l.m,member_input=member_input)
+                           gamma.list=gamma.list,lam= lam,l.m=l.m,member_input=member_input)
     resultall[[lt]]=result_adap.bic
 
   }
