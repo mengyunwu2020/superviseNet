@@ -22,7 +22,8 @@ superviseNetpath(
   threshold = 0.001,
   eps_z = 1e-05,
   l.update = TRUE,
-  tau1 = 0.001
+  tau1 = 0.001,
+  thres_gamma = 0.5
 )
 }
 \arguments{
@@ -61,6 +62,8 @@ superviseNetpath(
 \item{l.update}{Whether update the similarity matrix.}
 
 \item{tau1}{A small constant used in the computation of similarity matrix.}
+
+\item{thres_gamma}{A constant that thresholds the final precision matrix indicator estimator.}
 }
 \value{
 A list
